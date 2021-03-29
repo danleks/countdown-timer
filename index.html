@@ -6,10 +6,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>countdown timer</title>
 </head>
+<style>
+    html {
+        box-sizing: border-box;
+    }
+    *, *:before, *:after {
+        box-sizing: inherit;
+        padding: 0;
+        margin: 0;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        background-color: #DB524D;
+    }
+    .count {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 480px;
+        height: 370px;
+        margin-top: 50px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    p {
+        font-size: 120px;
+        font-weight: bold;
+        color: white;
+    }
+    button {
+        width: 200px;
+        cursor: pointer;
+        padding: 0 12px;
+        border-radius: 4px;
+        border: none;
+        font-size: 22px;
+        font-weight: bold;
+        height: 55px;
+        color: rgb(219, 82, 77);
+        background-color: white;
+
+    }
+    button.disabled {
+        pointer-events: none;
+        opacity: .1;
+    }
+    button.active {
+        pointer-events: visible;
+        opacity: 1;
+    }
+</style>
 <body>
-    
+    <div id="app"></div>
 </body>
 <script>
-    // code
+   const Slick = function (selector, options) {
+        this.elem = document.querySelector(selector);
+        this.data = options.data;
+        this.template = options.template;
+   };
+
+   Slick.prototype.render = function() {
+       this.elem.innerHTML = this.template(this.data);
+   };
+
+   Slick.prototype.countDown = function() {
+        let countDown = window.setInterval(() => {
+            this.data.count--;
+            this.render();
+            
+            if (this.data.count <= 0) {
+                clearInterval(countDown);
+                
+            }
+        }, 1000);
+   };
+
+   const app = new Slick('#app', {
+       data: {
+           count: 5,
+       },
+       template: function({ count }) {
+           let html = `
+            <div class="count">
+                <p>${count}</p>
+                <button class=${count > 0 ? 'disabled' : 'active'}>Start</button>
+            </div>
+           `;
+
+           return html;
+       }
+   });
+
+   // Render the app
+   app.render();
+   app.countDown();
+    
 </script>
 </html>
