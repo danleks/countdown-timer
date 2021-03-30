@@ -62,10 +62,21 @@
     <div id="app"></div>
 </body>
 <script>
+
+    let duration = 60;
+
    const Slick = function (selector, options) {
         this.elem = document.querySelector(selector);
         this.data = options.data;
         this.template = options.template;
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.hasAttribute(['data-start-countdown'])) return;
+
+            this.data.count = duration;
+            this.render();
+            this.countDown(); 
+        });
    };
 
    Slick.prototype.render = function() {
@@ -79,20 +90,19 @@
             
             if (this.data.count <= 0) {
                 clearInterval(countDown);
-                
             }
         }, 1000);
    };
 
    const app = new Slick('#app', {
        data: {
-           count: 5,
+           count: duration,
        },
        template: function({ count }) {
            let html = `
-            <div class="count">
+            <div class="count" aria-live="polite">
                 <p>${count}</p>
-                <button class=${count > 0 ? 'disabled' : 'active'}>Start</button>
+                <button data-start-countdown class="${count === duration || count < 1 ? 'active' : 'disabled'}">Start</button>
             </div>
            `;
 
@@ -100,9 +110,7 @@
        }
    });
 
-   // Render the app
    app.render();
-   app.countDown();
     
 </script>
 </html>
