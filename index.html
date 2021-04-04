@@ -63,7 +63,7 @@
 </body>
 <script>
 
-    let duration = 60;
+    let duration = 120;
 
    const Slick = function (selector, options) {
         this.elem = document.querySelector(selector);
@@ -94,6 +94,13 @@
         }, 1000);
    };
 
+   function secondsToMinutes(seconds) {
+        let min = parseInt(seconds / 60, 10);
+        let sec = (seconds % 60).toString().padStart(2, '0');
+
+        return `${min}:${sec}`;
+   }
+
    const app = new Slick('#app', {
        data: {
            count: duration,
@@ -101,7 +108,7 @@
        template: function({ count }) {
            let html = `
             <div class="count" aria-live="polite">
-                <p>${count}</p>
+                <p>${secondsToMinutes(count)}</p>
                 <button data-start-countdown class="${count === duration || count < 1 ? 'active' : 'disabled'}">Start</button>
             </div>
            `;
