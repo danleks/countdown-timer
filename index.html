@@ -89,11 +89,47 @@
     let duration = 10;
     let countDownTimer;
 
+    const handler = function(instance) {
+        return {
+            get: function(obj, prop) {
+                if (['[object Object]', '[object Array]'].indexOf(Object.prototype.toString.call(obj[prop])) > -1) {
+                    return new Proxy(obj[prop], handler(instance));
+                }
+                return obj[prop];
+                instance.render();
+            },
+            set: function(obj, prop, value) {
+                obj[prop] = value;
+                instance.render();
+                return true;
+            },
+            deleteProperty: function(obj, prop) {
+                delete obj[prop];
+                instance.render();
+                return true;
+            }
+        }
+    };
+
    const Slick = function (selector, options) {
-        this.elem = document.querySelector(selector);
-        this.data = options.data;
-        this.methods = options.methods;
-        this.template = options.template;
+        // Vars
+        const _this = this;
+        _this.elem = document.querySelector(selector);
+        const _data = new Proxy(options.data, handler(this));
+        _this.methods = options.methods;
+        _this.template = options.template;
+
+        // Define setter and getter for data
+        Object.defineProperty(this, 'data', {
+            get: function() {
+                return _data;
+            },
+            set: function(data) {
+                _data = new Proxy(data, handler(_this));
+                _this.render();
+                return true;
+            }
+        })
    };
 
    function handleClick(e) {
@@ -124,14 +160,12 @@
    const stopTimer = (duration) => {
         app.data.count = duration;
         app.data.start = true;
-        app.render();
         clearInterval(countDownTimer);
    }
 
    const countDown = () => {
         countDownTimer = window.setInterval(() => {
             app.data.count--;
-            app.render();
 
             if (app.data.count <= 0) {
                 stopTimer(duration);
