@@ -86,8 +86,7 @@
 </body>
 <script>
 
-    let duration = 10;
-    let countDownTimer;
+    let duration = 120;
 
     const handler = function(instance) {
         return {
@@ -132,45 +131,8 @@
         })
    };
 
-   function handleClick(e) {
-        timerHandler(e);
-        restartTimer(e);
-   }
-
    Slick.prototype.render = function() {
        this.elem.innerHTML = this.template({...this.data, ...this.methods});
-   };
-
-   const timerHandler = (e) => {
-    if (!e.target.hasAttribute(['data-countdown'])) return;
-
-        if (!app.data.start) {
-            stopTimer(app.data.count)
-            return;
-        }
-        app.data.start = false;
-        countDown();
-   }
-
-   const restartTimer = (e) => {
-        if (!e.target.hasAttribute(['data-countdown-restart'])) return;
-        stopTimer(duration);
-   }
-
-   const stopTimer = (duration) => {
-        app.data.count = duration;
-        app.data.start = true;
-        clearInterval(countDownTimer);
-   }
-
-   const countDown = () => {
-        countDownTimer = window.setInterval(() => {
-            app.data.count--;
-
-            if (app.data.count <= 0) {
-                stopTimer(duration);
-            }
-        }, 1000);
    };
 
 
@@ -178,6 +140,7 @@
        data: {
            count: duration,
            start: true,
+           countDownTimer: null,
        },
        methods: {
             secondsToMinutes: (seconds) => {
@@ -186,6 +149,38 @@
 
                 return `${min}:${sec}`;
             },
+            timerHandler: (e) => {
+                if (!e.target.hasAttribute(['data-countdown'])) return;
+
+                    if (!app.data.start) {
+                        app.methods.stopTimer(app.data.count)
+                        return;
+                    }
+                    app.data.start = false;
+                    app.methods.countDown();
+            },
+            restartTimer: (e) => {
+                if (!e.target.hasAttribute(['data-countdown-restart'])) return;
+                app.methods.stopTimer(duration);
+            },
+            stopTimer: (duration) => {
+                app.data.count = duration;
+                app.data.start = true;
+                clearInterval(app.data.countDownTimer);
+            },
+            countDown: () => {
+                app.data.countDownTimer = window.setInterval(() => {
+                    app.data.count--;
+
+                    if (app.data.count <= 0) {
+                        app.methods.stopTimer(duration);
+                    }
+                }, 1000);
+            },
+            handleClick: (e) => {
+                app.methods.timerHandler(e);
+                app.methods.restartTimer(e);
+            }
        },
        template: function({ count, start, secondsToMinutes }) {
            let html = `
@@ -203,7 +198,7 @@
    });
 
    app.render();
-   document.addEventListener('click', handleClick);
+   document.addEventListener('click', app.methods.handleClick);
     
 </script>
 </html>
