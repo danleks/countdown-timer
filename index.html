@@ -86,73 +86,74 @@
 </body>
 <script>
 
-    let duration = 120;
+    let duration = 10;
+    let countDownTimer;
 
    const Slick = function (selector, options) {
         this.elem = document.querySelector(selector);
         this.data = options.data;
+        this.methods = options.methods;
         this.template = options.template;
-        this.countDownTimer;
-
-        document.addEventListener('click', (e) => {
-           this.handleStart(e);
-           this.restartCount(e);
-        });
    };
+
+   function handleClick(e) {
+        timerHandler(e);
+        restartTimer(e);
+   }
 
    Slick.prototype.render = function() {
-       this.elem.innerHTML = this.template(this.data);
+       this.elem.innerHTML = this.template({...this.data, ...this.methods});
    };
 
-   Slick.prototype.countDown = function() {
-        this.countDownTimer = window.setInterval(() => {
-            this.data.count--;
-            this.render();
+   const timerHandler = (e) => {
+    if (!e.target.hasAttribute(['data-countdown'])) return;
 
-            if (this.data.count <= 0) {
-                clearInterval(this.countDownTimer);
+        if (!app.data.start) {
+            stopTimer(app.data.count)
+            return;
+        }
+        app.data.start = false;
+        countDown();
+   }
+
+   const restartTimer = (e) => {
+        if (!e.target.hasAttribute(['data-countdown-restart'])) return;
+        stopTimer(duration);
+   }
+
+   const stopTimer = (duration) => {
+        app.data.count = duration;
+        app.data.start = true;
+        app.render();
+        clearInterval(countDownTimer);
+   }
+
+   const countDown = () => {
+        countDownTimer = window.setInterval(() => {
+            app.data.count--;
+            app.render();
+
+            if (app.data.count <= 0) {
+                stopTimer(duration);
             }
         }, 1000);
    };
 
-   Slick.prototype.handleStart = function(e) {
-    if (!e.target.hasAttribute(['data-countdown'])) return;
-
-        if (!this.data.start) {
-            this.data.count = this.data.count;
-            this.data.start = true;
-            this.render();
-            clearInterval(this.countDownTimer);
-            return;
-        }
-
-        this.data.start = false;
-        this.countDown();
-   }
-
-   Slick.prototype.restartCount = function(e) {
-        if (!e.target.hasAttribute(['data-countdown-restart'])) return;
-        console.log('click')
-
-        this.data.count = duration;
-        this.data.start = true;
-        this.render();
-        clearInterval(this.countDownTimer);
-   }
-
-   function secondsToMinutes(seconds) {
-        let min = parseInt(seconds / 60, 10);
-        let sec = (seconds % 60).toString().padStart(2, '0');
-
-        return `${min}:${sec}`;
-   }
 
    const app = new Slick('#app', {
        data: {
            count: duration,
            start: true,
        },
-       template: function({ count, start }) {
+       methods: {
+            secondsToMinutes: (seconds) => {
+                let min = parseInt(seconds / 60, 10);
+                let sec = (seconds % 60).toString().padStart(2, '0');
+
+                return `${min}:${sec}`;
+            },
+       },
+       template: function({ count, start, secondsToMinutes }) {
            let html = `
             <div class="count" aria-live="polite">
                 <p>${secondsToMinutes(count)}</p>
@@ -168,6 +169,7 @@
    });
 
    app.render();
+   document.addEventListener('click', handleClick);
     
 </script>
 </html>
